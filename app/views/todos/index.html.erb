@@ -9,7 +9,7 @@
 
     <!-- Add new todo -->
     <div class="panel-body">
-    <%= form_for @todo, {class: "my-form"} do |f| %>
+    <%= form_for @todo, {class: "my-form", remote: true } do |f| %>
       <%= f.label "Add New To-Do" %>
       <div class="input-group">
         <%= f.text_area :title, :class => "form-control" %>
@@ -24,7 +24,7 @@
     <table class="my-table table table-hover">
       <tbody id="todolist">
         <% @todos.each do |todo| %>
-          <tr id="todo-<%= todo.id %>">
+          <tr id="<%= todo.id %>">
             <%= render :partial => "todo", :locals => { :todo => todo } %>
           </tr>
         <% end %>
@@ -32,3 +32,25 @@
     </table>
   </div>
 </div>
+
+<script>
+  /*我們必須把事件驅動設定在一個更高層的 element，讓這個 element 去定位下層 element 
+    會觸發的事件驅動，這個技巧叫 event targeting。
+
+    當我們點擊 todolist 裡的任一網頁元件時，它都會向 todolist 發出事件，但因為我們設定了這個 todolist 的事件驅動，而它只監聽來自於 .delete-todo 的網頁元件，因此只有在點擊 .delete-todo時才會觸發該事件驅動，發送非同步的 DELETE 請求。
+  */
+  $("#todolist").on("click", ".delete-todo", function(event) {
+    //  由於被點擊的刪除按鈕在 <tr> 標籤下的 <td> 裡，
+    //  因此在觸發事件驅動時， 必須從 event.target 往上走兩層才能找到對應該 todo 的 id。
+    var id = event.target.parentNode.parentNode.id;
+    console.log(id);   
+    $.ajax({
+      url: "todos/" + id,
+      method: "DELETE",
+      dataType: "json",
+      success: function(data) {
+        $("#" + data["id"]).remove();
+      }
+    });
+  });
+</script>

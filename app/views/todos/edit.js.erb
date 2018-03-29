@@ -1,0 +1,12 @@
+/*
+https://lighthouse.alphacamp.co/units/1137
+使用 render 和 j 語法把編輯用表單放入一個 html 的 Ruby 變數裡
+使用 jQuery 選擇器透過 id 找出網頁裡對應的 todo，即負責該 todo 的 <tr> 標籤
+使用 children 方法把該 todo 下層的 elements 提出來，即 _todo.html.erb 裡的三個 <td> 標籤
+負責文字的 <td> 會是第二個 element，因此請透過 index 1 從 elements 裡取出該 <td>
+最後使用 jQuery 的 html 方法把 Ruby 的 html 變數給放入剛取出的 <td> 裡
+*/
+
+<% html = j( render :partial => "form", :locals => { :todo => @todo } ) %>
+var todo_tds = $("#todo-<%= @todo.id %>").children();
+$(todo_tds[1]).html("<%= html %>");

@@ -1,0 +1,6 @@
+// 將 _todo.html.erb 根據 @todo 載入到一個 Ruby 的 html 變數裡
+// 使用 jQuery 的選擇器找出 todo，用 Ruby 的html 變數裡的內容替換現在的內容。
+
+
+<% html = j( render :partial => "todo", :locals => { :todo => @todo } ) %>
+$("#todo-<%= @todo.id %>").html("<%= html %>")
