@@ -85,6 +85,44 @@
     });
   });
 
+  $("#todolist").on("click", ".edit-todo", function(event) {
+    var id = event.target.parentNode.parentNode.id;
+    $.ajax({
+      url: "todos/" + id + "/edit",
+      method: "GET",
+      dataType: "json",
+      success: function(data) {
+        // 使用 jQuery 選擇器找出負責 todo 的 <tr> element，再用 find 方法找到下層帶有 my-title class 的 element，也就是負責文字的 <td>，取出後放入 textColumn 裡
+        var textColumn = $("#" + data["id"]).find(".my-title");
+        // 使用 jQuery 選擇器透過 edit-template 取得該樣板，接著用 jQuery 的 html 方法將樣板內容取出，最後在 textColumn 上用 html 方法把樣板內容放入
+        textColumn.html($("#edit-template").html());
+        // 在 textColumn 上使用 find 方法透過 .update-title 取得剛加入的編輯表單的輸入欄位，將從 server 回傳的 data 裡取出文字透過 val 方法放入其中
+        textColumn.find(".update-title").val(data["title"]);
+        // 注意：input 類型的標籤無法使用 html 方法，必須要用 val 方法來存取值。
+        textColumn.on("click", ".update-button", function(updateEvent) { 
+          updateEvent.preventDefault();
+          $.ajax({
+            url: "todos/" + data["id"],
+            method: "PATCH",
+            dataType: "json",
+            data: { 
+              todo : {
+                title : textColumn.find(".update-title").val()
+              }
+            },
+            success: function(updateData) {
+              var textColumn = $("#" + data["id"]).find(".my-title");
+              textColumn.html('<p class="title my-font"></p>');
+              textColumn.find('p').html(updateData["title"]);
+            }
+          });
+        });
+      }
+    });
+  });
+
+
+
 </script>
 
 <!-- 設定屬性 type 為 text/template，表示是樣板
@@ -94,11 +132,22 @@
   <td class="my-pointer">
     <span class="my-font glyphicon glyphicon-unchecked"></span>
   </td>
-  <td>
+  <td class="my-title">
     <p class="title my-font"></p>
   </td>
   <td class="my-operation">
-    <span class="my-btn my-btn-transparent text-info glyphicon glyphicon-pencil"></span>
+    <span class="edit-todo my-btn my-btn-transparent text-info glyphicon glyphicon-pencil"></span>
     <span class="delete-todo my-btn my-btn-transparent text-danger glyphicon glyphicon-trash"></span>
   </td>
+</script>
+
+<script type="text/template" id="edit-template">
+  <form>
+    <div class="input-group">
+      <input type="text_area" class="update-title form-control" />
+      <div class="input-group-addon">
+        <button class="update-button my-btn my-btn-transparent">Update</button>
+      </div>
+    </div>
+  </form>
 </script>
