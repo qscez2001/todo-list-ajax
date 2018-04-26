@@ -5,7 +5,8 @@
     <!-- Rails 的網頁都預設有驗證用的編碼 
       為了防禦 CSRF，rails 內建了一些驗證機制來審核發出請求的來源，
       而 jquery_ujs 套件會透過 <%= csrf_meta_tags %> 取得驗證用的編碼，
-      在我們使用 ajax 方法發送非同步請求時自動帶入驗證用的編碼-->
+      在我們使用 ajax 方法發送非同步請求時自動帶入驗證用的編碼
+      https://blog.techbridge.cc/2017/02/25/csrf-introduction/-->
     <%= csrf_meta_tags %>
 
     <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload' %>
