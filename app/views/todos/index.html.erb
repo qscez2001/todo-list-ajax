@@ -34,10 +34,12 @@
 </div>
 
 <script>
-  /*我們必須把事件驅動設定在一個更高層的 element，讓這個 element 去定位下層 element 
+  /* 我們把刪除的事件驅動寫在 index.html.erb 裡，因此只有在index.html.erb載入時會設定刪除的事件驅動
+    我們必須把事件驅動設定在一個更高層的 element，讓這個 element 去定位下層 element 
     會觸發的事件驅動，這個技巧叫 event targeting。
 
-    當我們點擊 todolist 裡的任一網頁元件時，它都會向 todolist 發出事件，但因為我們設定了這個 todolist 的事件驅動，而它只監聽來自於 .delete-todo 的網頁元件，因此只有在點擊 .delete-todo時才會觸發該事件驅動，發送非同步的 DELETE 請求。
+    當我們點擊 todolist 裡的任一網頁元件時，它都會向 todolist 發出事件，
+    下面的設定表示這個事件驅動必須是由帶有 .delete-todo 的網頁元件所觸發
   */
   $("#todolist").on("click", ".delete-todo", function(event) {
     //  由於被點擊的刪除按鈕在 <tr> 標籤下的 <td> 裡，
@@ -54,28 +56,40 @@
     });
   });
 
-  // 如果 form 裡沒有設定 action，Chrome 瀏覽器就會把 form action 預設成當前網址。
   $("#create-todo").on("click", function(event) {
+    // 如果 form 裡沒有設定 action，Chrome 瀏覽器就會把 form action 預設成當前網址。
+    // 當我們點擊了 create 按鈕發送非同步請求後，因為 create 按鈕在 form 裡面，我們同時也觸發了 form action 的請求，因此第一次的請求新增了資料，第二次的請求刷新了畫面。
     event.preventDefault();
     $.ajax({
       url: "todos/",
       method: "POST",
       dataType: "json",
+      // 請記住這個格式，前端傳出去的是 data，data 裡有一個 todo，這個 todo 裡有一組 key-value pair，key 為 title，value 為輸入欄位的文字 這個格式，就是原本 form helper 會回傳給 server 的資料格式。
       data: { 
         todo: { 
           title: $("#new-todo").val()
         }
       },
 
+      // 當 html 方法的括號沒有帶入資料時，即拿出裡面的網頁內容；當 html 方法的括號有帶入資料時，即將該資料取代原本的內容
       success: function(data) {
         var todo = document.createElement("tr");
         todo.id = data["id"];
+        // 使用 jQuery 選擇器透過 todo-template 取得該樣板，接著用 jQuery 的 html 方法將樣板內容取出，接著在 <tr> element 上用 html 方法把樣板內容放入
+        $(todo).html($("#todo-template").html());
+        // 在 <tr> 使用 jQuery 的 find 方法透過 class 向下查詢負責文字的 element，該 element 的 class 內容為 title my-font，請從回傳的 data 裡取出 title 透過 html 方法放入該 element 內
+        $(todo).find(".title.my-font").html(data["title"]);
+        // 使用 jQuery 選擇器找到 todolist，使用 append 方法將新增的 todo 放入列表末端
+        $("#todolist").append(todo);
       }
     });
   });
 
 </script>
 
+<!-- 設定屬性 type 為 text/template，表示是樣板
+設定屬性 id 為 todo-template，之後我們會透過這個 id 來取用樣板。
+ -->
 <script type="text/template" id="todo-template">
   <td class="my-pointer">
     <span class="my-font glyphicon glyphicon-unchecked"></span>
