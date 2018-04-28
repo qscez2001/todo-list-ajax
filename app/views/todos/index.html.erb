@@ -31,6 +31,7 @@
       </tbody>
     </table>
   </div>
+  <h4 id="end" class="text-center"></h4>
 </div>
 
 <script>
@@ -80,7 +81,7 @@
         // 在 <tr> 使用 jQuery 的 find 方法透過 class 向下查詢負責文字的 element，該 element 的 class 內容為 title my-font，請從回傳的 data 裡取出 title 透過 html 方法放入該 element 內
         $(todo).find(".title.my-font").html(data["title"]);
         // 使用 jQuery 選擇器找到 todolist，使用 append 方法將新增的 todo 放入列表末端
-        $("#todolist").append(todo);
+        $("#todolist").prepend(todo);
       }
     });
   });
@@ -136,6 +137,41 @@
     });
   });
 
+  var current_todo_id = <%= @todos.last.id %>;
+
+  // 使用 jQuery 選擇器包住 window 物件，把 window 物件變成 jQuery 物件
+  // 使用 jQuery 的 on 方法，第一個資料帶入 scroll，表示我們要設定是捲動的事件驅動，
+  // 第二筆資料帶入一個匿名 function
+  $(window).on("scroll", function(event) {
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+      $.ajax({
+        // 根據 URI 格式設定 url：/todos/load，請 url 後再加上 ?current_id=current_todo_id，將前端最後一筆 todo 的 id 傳給 server
+        url: "/todos/load?current_id=" + current_todo_id,
+        method: "GET",
+        dataType: "json",
+        success: function(data) {
+          // 我們之前都是直接透過 data 取用 id 等 todo 資料，但這次我們在 JSON 外層加了一個 data，所以我們先要把管理 todos 的陣列取出來放入一個變數 todos 裡
+          var todos = data["data"];
+          if (todos.length > 0) {
+            // https://lighthouse.alphacamp.co/units/1014
+            todos.forEach(function(value, index) {
+              // 只要 todo 有使用到 jQuery 方法，就請先將 todo 透過 jQuery 選擇器轉換成 jQuery 物件
+              var todo = document.createElement("tr");
+              todo.id = todos[index]["id"];
+              $(todo).html($("#todo-template").html());
+              todos[index]["done"] ? $(todo).find(".my-pointer").html('<span class="toggle-todo my-font glyphicon glyphicon-check"></span>') : $(todo).find(".my-pointer").html('<span class="toggle-todo my-font glyphicon glyphicon-unchecked"></span>');
+
+              $(todo).find(".title.my-font").html(todos[index]["title"]);
+              $("#todolist").append(todo);
+              current_todo_id = todos[index]["id"];
+            });
+          } else {
+            $("#end").html("No more todo");
+          }
+        }
+      });
+    }
+  });
 
 </script>
 

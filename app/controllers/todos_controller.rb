@@ -1,11 +1,28 @@
 class TodosController < ApplicationController
   def index
-    @todos = Todo.all
 
-    if params[:id]
-      @todo = Todo.find(params[:id])
-    else
-      @todo = Todo.new
+    @todos = Todo.order("id DESC").limit(10)
+    # @todos = Todo.all
+
+    # if params[:id]
+    #   @todo = Todo.find(params[:id])
+    # else
+    #   @todo = Todo.new
+    # end
+  end
+
+  def load
+    if params[:current_id]
+      @todos = Todo.where( "id < ?", params[:current_id]).order("id DESC").limit(10)
+      render json: {
+        data: @todos.map do |todo|
+        {
+          id: todo.id,
+          title: todo.title,
+          done: todo.done
+        }
+        end
+      }
     end
   end
 
